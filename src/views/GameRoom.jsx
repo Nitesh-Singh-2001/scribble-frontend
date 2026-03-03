@@ -118,17 +118,42 @@ const GameRoom = () => {
                </div>
             </div>
 
-            <button 
-              onClick={() => socket.emit("start_game", roomId)}
-              disabled={gameState.players.length < 2}
-              className={`w-full py-4 font-black rounded-xl text-lg uppercase tracking-widest transition-all shadow-lg ${
-                gameState.players.length >= 2 
-                  ? "bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-slate-900 transform hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(250,204,21,0.3)]" 
-                  : "bg-slate-700 text-slate-500 cursor-not-allowed"
-              }`}
-            >
-              {gameState.players.length < 2 ? `Need at least 2 players (${gameState.players.length}/2)` : "Start Game"}
-            </button>
+            <div className="flex flex-col gap-4">
+              <button 
+                onClick={() => socket.emit("start_game", roomId)}
+                disabled={gameState.players.length < 2}
+                className={`w-full py-4 font-black rounded-xl text-lg uppercase tracking-widest transition-all shadow-lg ${
+                  gameState.players.length >= 2 
+                    ? "bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-slate-900 transform hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(250,204,21,0.3)]" 
+                    : "bg-slate-700 text-slate-500 cursor-not-allowed"
+                }`}
+              >
+                {gameState.players.length < 2 ? `Need at least 2 players (${gameState.players.length}/2)` : "Start Game"}
+              </button>
+
+              <button
+                onClick={() => {
+                  const inviteLink = `${window.location.origin}/?room=${roomId}`;
+                  navigator.clipboard.writeText(inviteLink);
+                  const btn = document.getElementById('waiting-invite-btn');
+                  if (btn) {
+                    const originalText = btn.innerText;
+                    btn.innerText = "COPIED!";
+                    btn.classList.add("bg-green-500", "text-white");
+                    btn.classList.remove("bg-slate-700", "text-slate-300");
+                    setTimeout(() => {
+                      btn.innerText = originalText;
+                      btn.classList.remove("bg-green-500", "text-white");
+                      btn.classList.add("bg-slate-700", "text-slate-300");
+                    }, 2000);
+                  }
+                }}
+                id="waiting-invite-btn"
+                className="w-full py-3 bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm font-bold uppercase tracking-wider rounded-xl transition-colors border border-slate-600 flex items-center justify-center gap-2"
+              >
+                📋 Copy Invite Link
+              </button>
+            </div>
           </div>
         </div>
       )}
