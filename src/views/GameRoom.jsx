@@ -92,9 +92,47 @@ const GameRoom = () => {
     navigate("/");
   };
 
+  const hasStarted = gameState.hasStarted;
+
   return (
     <div className="flex h-screen w-screen bg-slate-900 overflow-hidden text-white font-sans relative">
       
+      {/* Waiting / Start Game Overlay */}
+      {hasStarted === false && !gameOver && (
+        <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-slate-900/90 backdrop-blur-md">
+          <div className="bg-slate-800 p-10 rounded-3xl shadow-2xl border-2 border-slate-600 w-full max-w-lg text-center transform scale-100 transition-all">
+            <h2 className="text-4xl font-black text-white mb-4 uppercase tracking-widest">Waiting Room</h2>
+            <p className="text-slate-300 mb-8 text-lg">
+              {gameState.players.length < 2 
+                ? "Waiting for more players to join..." 
+                : "Ready to start the game!"}
+            </p>
+            
+            <div className="flex justify-center mb-8">
+               <div className="flex -space-x-4">
+                 {gameState.players.map((p) => (
+                   <div key={p.id} className="w-12 h-12 rounded-full border-2 border-slate-800 bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-slate-900 font-bold text-sm shadow-md" title={p.name}>
+                     {p.name.substring(0, 2).toUpperCase()}
+                   </div>
+                 ))}
+               </div>
+            </div>
+
+            <button 
+              onClick={() => socket.emit("start_game", roomId)}
+              disabled={gameState.players.length < 2}
+              className={`w-full py-4 font-black rounded-xl text-lg uppercase tracking-widest transition-all shadow-lg ${
+                gameState.players.length >= 2 
+                  ? "bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-slate-900 transform hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(250,204,21,0.3)]" 
+                  : "bg-slate-700 text-slate-500 cursor-not-allowed"
+              }`}
+            >
+              {gameState.players.length < 2 ? `Need at least 2 players (${gameState.players.length}/2)` : "Start Game"}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Game Over Modal */}
       {gameOver && (
          <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm">
@@ -178,8 +216,31 @@ const GameRoom = () => {
 
       {/* Right Sidebar */}
       <div className="w-1/4 h-full flex flex-col bg-slate-800 border-l border-slate-700">
-        <div className="p-4 bg-slate-900 border-b border-slate-700">
+        <div className="p-4 bg-slate-900 border-b border-slate-700 flex flex-col gap-2">
           <h2 className="font-bold text-yellow-400 uppercase tracking-widest text-center">Room: <span className="text-white">{roomId}</span></h2>
+          <button
+            onClick={() => {
+              const inviteLink = `${window.location.origin}/?room=${roomId}`;
+              navigator.clipboard.writeText(inviteLink);
+              // Simple temporary UI feedback
+              const btn = document.getElementById('invite-btn');
+              if (btn) {
+                const originalText = btn.innerText;
+                btn.innerText = "COPIED!";
+                btn.classList.add("bg-green-500", "text-white");
+                btn.classList.remove("bg-slate-700", "text-slate-300");
+                setTimeout(() => {
+                  btn.innerText = originalText;
+                  btn.classList.remove("bg-green-500", "text-white");
+                  btn.classList.add("bg-slate-700", "text-slate-300");
+                }, 2000);
+              }
+            }}
+            id="invite-btn"
+            className="w-full py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-bold uppercase tracking-wider rounded-lg transition-colors border border-slate-600 flex items-center justify-center gap-2"
+          >
+            📋 Copy Invite Link
+          </button>
         </div>
         <ChatBox />
       </div>

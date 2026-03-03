@@ -1,10 +1,21 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const Home = () => {
   const [name, setName] = useState('');
   const [roomId, setRoomId] = useState('');
+  const [isInvite, setIsInvite] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    // Check if there is a ?room= parameter in the URL
+    const roomParam = searchParams.get("room");
+    if (roomParam) {
+      setRoomId(roomParam.toUpperCase());
+      setIsInvite(true);
+    }
+  }, [searchParams]);
 
   const handleJoin = (e) => {
     e.preventDefault();
@@ -32,7 +43,7 @@ const Home = () => {
             Scribble
           </h1>
           <p className="text-orange-100 mt-2 font-medium tracking-wide relative z-10">
-            Draw, Guess, Win!
+            {isInvite ? "You've been invited!" : "Draw, Guess, Win!"}
           </p>
         </div>
 
@@ -51,6 +62,7 @@ const Home = () => {
                 placeholder="Enter a fun name..."
                 required
                 value={name}
+                autoFocus
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all shadow-inner"
               />
@@ -68,17 +80,20 @@ const Home = () => {
                   placeholder="e.g. FUNROOM"
                   required
                   value={roomId}
+                  disabled={isInvite}
                   onChange={(e) => setRoomId(e.target.value.toUpperCase())}
-                  className="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all shadow-inner uppercase"
+                  className={`flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all shadow-inner uppercase ${isInvite ? "opacity-60 cursor-not-allowed" : ""}`}
                 />
-                <button
-                  type="button"
-                  onClick={createRandomRoom}
-                  className="px-4 py-3 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-xl transition-colors font-semibold border border-slate-600 flex items-center justify-center"
-                  title="Generate Random Room"
-                >
-                  🎲
-                </button>
+                {!isInvite && (
+                  <button
+                    type="button"
+                    onClick={createRandomRoom}
+                    className="px-4 py-3 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-xl transition-colors font-semibold border border-slate-600 flex items-center justify-center"
+                    title="Generate Random Room"
+                  >
+                    🎲
+                  </button>
+                )}
               </div>
             </div>
 
@@ -87,7 +102,7 @@ const Home = () => {
               type="submit"
               className="w-full py-4 bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-slate-900 font-black rounded-xl text-lg uppercase tracking-widest transition-all transform hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(250,204,21,0.3)] focus:outline-none focus:ring-4 focus:ring-yellow-400/50"
             >
-              Play Now
+              {isInvite ? "Join Game" : "Play Now"}
             </button>
             
           </form>
